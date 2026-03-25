@@ -1,0 +1,2 @@
+lib/services/creatives.ts(26,11): error TS18048: 'res.data' is possibly 'undefined'.
+lib/services/creatives.ts(27,19): error TS18048: 'res.data' is possibly 'undefined'.

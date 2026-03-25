@@ -22,7 +22,7 @@ export function generateMockProducts(count: number) {
       saturation,
       margin,
       score: Number(score.toFixed(2)),
-      status: 'candidate' as const
+      status: 'candidate' as 'candidate' | 'top'
     });
   }
   

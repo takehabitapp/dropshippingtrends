@@ -23,7 +23,7 @@ export async function generateProductImage(product: Product): Promise<string[]> 
     const results = await Promise.all(promises);
     
     results.forEach(res => {
-      if (res.data[0]?.url) {
+      if (res.data && res.data[0]?.url) {
         urls.push(res.data[0].url);
       }
     });
