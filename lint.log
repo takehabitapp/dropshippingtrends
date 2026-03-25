@@ -1,0 +1,20 @@
+
+C:\Users\Darío Balado Villami\OneDrive\dropshippingtrends\app\api\analyze\route.ts
+  67:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Darío Balado Villami\OneDrive\dropshippingtrends\app\api\explore\route.ts
+   5:28  warning  'req' is defined but never used           @typescript-eslint/no-unused-vars
+  26:17  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Darío Balado Villami\OneDrive\dropshippingtrends\app\api\save\route.ts
+  56:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Darío Balado Villami\OneDrive\dropshippingtrends\app\page.tsx
+  120:51  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  120:68  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\Darío Balado Villami\OneDrive\dropshippingtrends\lib\services\analysis.ts
+  40:12  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 7 problems (5 errors, 2 warnings)
+

@@ -37,7 +37,7 @@ export async function generateProductAnalysis(product: Product) {
   
   try {
     return JSON.parse(jsonMatch);
-  } catch (e) {
+  } catch {
     console.error('Failed to parse OpenAI response:', content);
     throw new Error('Invalid JSON from OpenAI');
   }

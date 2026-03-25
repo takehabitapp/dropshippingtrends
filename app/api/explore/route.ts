@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { generateMockProducts } from '@/lib/services/products';
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     // Generate 30 fake products
     const products = generateMockProducts(30);
@@ -23,8 +23,9 @@ export async function POST(req: Request) {
     // Return the inserted products to the client immediately
     return NextResponse.json({ success: true, products: inserted });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('Error in /api/explore:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

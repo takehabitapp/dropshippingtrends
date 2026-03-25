@@ -117,7 +117,7 @@ export default function Dashboard() {
         <div className="text-center py-20 text-gray-500">
           <Search size={48} className="mx-auto mb-4 opacity-20" />
           <p className="text-xl">No hay productos descubiertos aún.</p>
-          <p className="text-sm mt-2">Haz clic en "Buscar Productos" para comenzar.</p>
+          <p className="text-sm mt-2">Haz clic en &quot;Buscar Productos&quot; para comenzar.</p>
         </div>
       )}
 
