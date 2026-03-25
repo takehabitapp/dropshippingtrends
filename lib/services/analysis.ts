@@ -33,7 +33,7 @@ export async function generateProductAnalysis(product: Product) {
   const content = response.choices[0].message.content || '{}';
   
   // Extract JSON if wrapped in markdown
-  const jsonMatch = content.match(/\\{.*\\}/s) ? content.match(/\\{.*\\}/s)![0] : content;
+  const jsonMatch = content.match(/\{[\s\S]*\}/) ? content.match(/\{[\s\S]*\}/)![0] : content;
   
   try {
     return JSON.parse(jsonMatch);
