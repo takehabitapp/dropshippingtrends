@@ -13,6 +13,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="dark">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+      </head>
       <body className="antialiased">
         <header className="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center mb-8 border-b border-white/5">
           <div className="flex items-center gap-3">
