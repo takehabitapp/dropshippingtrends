@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "DropshipTrends API MVP",
-  description: "AI-Powered Product Discovery",
+  title: "DropshipTrends – Descubrimiento de Productos con IA",
+  description: "Plataforma de análisis y descubrimiento de tendencias para dropshipping impulsada por IA.",
 };
 
 export default function RootLayout({
@@ -16,20 +13,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="dark">
-      <body
-        className={`${inter.className} antialiased`}
-      >
-        <header className="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center mb-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg">
-              D
+      <body className="antialiased">
+        <header className="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center mb-8 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center font-black text-white shadow-lg text-sm">
+              DT
             </div>
-            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+            <h1 className="text-lg font-bold gradient-text tracking-tight">
               DropshipTrends
             </h1>
           </div>
+          <div className="text-xs text-gray-600 font-medium hidden md:block">
+            Powered by GPT-3.5 + DALL·E 3
+          </div>
         </header>
-        <main className="container mx-auto px-4 pb-24">
+        <main className="container mx-auto px-4 pb-24 max-w-5xl">
           {children}
         </main>
       </body>

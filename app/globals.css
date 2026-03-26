@@ -1,36 +1,154 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;900&display=swap");
 @import "tailwindcss";
 
 @theme {
-  --color-background: #0a0a0a;
+  --color-background: #080810;
   --color-foreground: #ededed;
-  --color-card: rgba(255, 255, 255, 0.05);
-  --color-card-border: rgba(255, 255, 255, 0.1);
+  --color-card: rgba(255, 255, 255, 0.04);
+  --color-card-border: rgba(255, 255, 255, 0.08);
 }
 
 @layer base {
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    background-image: 
-      radial-gradient(circle at 15% 50%, rgba(20, 20, 50, 0.5), transparent 25%),
-      radial-gradient(circle at 85% 30%, rgba(30, 20, 40, 0.5), transparent 25%);
+    background-image:
+      radial-gradient(ellipse 60% 40% at 10% 60%, rgba(88, 28, 135, 0.12), transparent),
+      radial-gradient(ellipse 50% 35% at 90% 20%, rgba(30, 58, 138, 0.12), transparent),
+      radial-gradient(ellipse 40% 30% at 50% 90%, rgba(6, 78, 59, 0.08), transparent);
     background-attachment: fixed;
     min-height: 100vh;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Outfit", Arial, Helvetica, sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
   }
 }
 
+/* ── Glassmorphism ── */
 .glass {
   background: var(--color-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--color-card-border);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
 }
 
 .glass-panel {
-  background: rgba(15, 15, 20, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(12, 12, 20, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Hero card ── */
+.hero-card {
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.15) 0%, rgba(30, 58, 138, 0.15) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 60px rgba(88, 28, 135, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Gradient text ── */
+.gradient-text {
+  background: linear-gradient(to right, #fff 0%, #a78bfa 50%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Explore button ── */
+.explore-btn {
+  background: #fff;
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.25);
+  transition: all 0.2s ease;
+}
+.explore-btn:not(:disabled):hover {
+  background: #e5e7eb;
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
+  transform: scale(1.04);
+}
+.explore-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── Section title ── */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Stat cards ── */
+.stat-card {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+/* ── Info block ── */
+.info-block {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+/* ── Tag chip ── */
+.tag {
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 9999px;
+  padding: 0.15rem 0.65rem;
+  font-size: 0.7rem;
+  text-transform: capitalize;
+  color: #9ca3af;
+}
+
+/* ── Action buttons ── */
+.action-btn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn--ghost {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+}
+.action-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.action-btn--primary {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.25);
+}
+.action-btn--primary:not(:disabled):hover {
+  opacity: 0.9;
+  box-shadow: 0 4px 24px rgba(124, 58, 237, 0.4);
 }
