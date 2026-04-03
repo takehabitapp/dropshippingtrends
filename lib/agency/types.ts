@@ -6,6 +6,7 @@ export interface ProductReview {
     platform: string;
     price: number;
     reliability: 'alta' | 'media' | 'baja';
+    url?: string;
   };
   marketPrice: number;
   recommendedPrice: number;

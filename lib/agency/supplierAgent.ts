@@ -14,6 +14,7 @@ export class SupplierAgent {
           "platform": "AliExpress o Alibaba",
           "price": 0.00,
           "reliability": "alta", // "alta", "media" o "baja"
+          "url": "https://es.aliexpress.com/item/simulado_o_real.html"
         }
       }
       Solo devuelve el objeto JSON, sin markdown tags.
