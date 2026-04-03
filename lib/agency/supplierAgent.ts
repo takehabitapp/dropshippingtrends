@@ -33,8 +33,25 @@ export class SupplierAgent {
         const content = response.choices[0].message.content || '{}';
         const jsonMatch = content.match(/\{[\s\S]*\}/) ? content.match(/\{[\s\S]*\}/)![0] : content;
         const parsed = JSON.parse(jsonMatch);
+        
+        // Construct a real search URL if the agent gave us a placeholder or generic one
+        let finalUrl = parsed.supplier?.url;
+        if (!finalUrl || finalUrl.includes('simulado_o_real.html')) {
+          const searchTerm = encodeURIComponent(candidate.name);
+          if (parsed.supplier?.platform?.toLowerCase().includes('alibaba')) {
+            finalUrl = `https://www.alibaba.com/showroom/${searchTerm}.html`;
+          } else {
+            finalUrl = `https://www.aliexpress.com/wholesale?SearchText=${searchTerm}`;
+          }
+        }
 
-        return { ...candidate, supplier: parsed.supplier };
+        return { 
+          ...candidate, 
+          supplier: { 
+            ...parsed.supplier,
+            url: finalUrl 
+          }
+        };
       } catch (e) {
         console.error('[Agent: Supplier] Error para', candidate.name);
         return { 
