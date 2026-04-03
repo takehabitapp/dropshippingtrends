@@ -37,7 +37,7 @@ export class SupplierAgent {
         // Construct a real search URL if the agent gave us a placeholder or generic one
         let finalUrl = parsed.supplier?.url;
         if (!finalUrl || finalUrl.includes('simulado_o_real.html')) {
-          const searchTerm = encodeURIComponent(candidate.name);
+          const searchTerm = encodeURIComponent(candidate.name as string);
           if (parsed.supplier?.platform?.toLowerCase().includes('alibaba')) {
             finalUrl = `https://www.alibaba.com/showroom/${searchTerm}.html`;
           } else {

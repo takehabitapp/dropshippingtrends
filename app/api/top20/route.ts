@@ -5,8 +5,9 @@ export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
+    const { count = 20 } = await req.json().catch(() => ({}));
     const agency = new Top20Orchestrator();
-    const products = await agency.runResearchCycle();
+    const products = await agency.runResearchCycle(count);
 
     return NextResponse.json({ 
       success: true, 

@@ -22,10 +22,11 @@ export default function Dashboard() {
   const [searchProducts, setSearchProducts] = useState<ProductReview[]>([]);
   const [loadingSearch, setLoadingSearch] = useState(false);
 
-  const [top20Products, setTop20Products] = useState<ProductReview[]>([]);
-  const [loadingTop20, setLoadingTop20] = useState(false);
+  const [topProducts, setTopProducts] = useState<ProductReview[]>([]);
+  const [loadingTop, setLoadingTop] = useState(false);
+  const [topCount, setTopCount] = useState(20);
 
-  const [openSection, setOpenSection] = useState<'search' | 'top20' | null>(null);
+  const [openSection, setOpenSection] = useState<'search' | 'top' | null>(null);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -50,28 +51,29 @@ export default function Dashboard() {
     }
   };
 
-  const handleTop20 = async () => {
-    setLoadingTop20(true);
-    setTop20Products([]);
+  const handleTopRequest = async () => {
+    setLoadingTop(true);
+    setTopProducts([]);
     
     try {
       const res = await fetch("/api/top20", { 
         method: "POST",
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: topCount })
       });
       
       const data = await res.json();
       if (data.success && data.products) {
-        setTop20Products(data.products);
+        setTopProducts(data.products);
       }
     } catch (e) {
       console.error(e);
     } finally {
-      setLoadingTop20(false);
+      setLoadingTop(false);
     }
   };
 
-  const toggleSection = (section: 'search' | 'top20') => {
+  const toggleSection = (section: 'search' | 'top') => {
     setOpenSection(openSection === section ? null : section);
   };
 
@@ -80,14 +82,14 @@ export default function Dashboard() {
       {/* ── Main Header ── */}
       <div className="text-center mb-10 pt-8">
         <h2 className="text-5xl font-black gradient-text tracking-tighter mb-4">
-          DropshippingTrends Tops
+          DropshippingTrends
         </h2>
         <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-          Sistema Multi-Agente Avanzado. Expande las secciones abajo para iniciar un análisis profundo sin limitaciones de tiempo, priorizando calidad sobre velocidad.
+          Sistema Multi-Agente Avanzado. Expande las secciones abajo para iniciar un análisis profundo sin limitaciones de tiempo.
         </p>
       </div>
 
-      {/* ── Section 1: Producto Buscado ── */}
+      {/* ── Section 1: Analizar producto ── */}
       <div className="glass rounded-3xl overflow-hidden border border-white/5 transition-all">
         <button 
           onClick={() => toggleSection('search')} 
@@ -97,7 +99,7 @@ export default function Dashboard() {
             <div className="p-3 bg-purple-500/20 rounded-xl text-purple-400">
               <Search size={24} />
             </div>
-            <h3 className="text-2xl font-bold text-white">Análisis: Producto Buscado</h3>
+            <h3 className="text-2xl font-bold text-white">Analizar producto</h3>
           </div>
           {openSection === 'search' ? <ChevronUp size={24} className="text-gray-400" /> : <ChevronDown size={24} className="text-gray-400" />}
         </button>
@@ -116,7 +118,7 @@ export default function Dashboard() {
                 <div className="flex flex-col md:flex-row w-full gap-4 bg-black/40 p-6 rounded-2xl border border-white/5">
                   <input 
                     type="text" 
-                    placeholder="Ej: streetwear, gym wear mujer..." 
+                    placeholder="Ej: proyector galaxia, masajeador cuello..." 
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     disabled={loadingSearch}
@@ -133,14 +135,14 @@ export default function Dashboard() {
                     ) : (
                       <Sparkles size={20} />
                     )}
-                    {loadingSearch ? "Analizando mercado..." : "Buscar productos"}
+                    {loadingSearch ? "Analizando..." : "Analizar producto"}
                   </button>
                 </div>
                 
                 {loadingSearch && (
                   <div className="text-purple-400 text-sm flex items-center justify-center animate-pulse py-4">
                     <Loader2 size={16} className="mr-2 animate-spin" />
-                    Los agentes están evaluando tendencias, logística, proveedores y competencia. Por favor espera...
+                    Evaluando tendencias, logística, proveedores y competencia...
                   </div>
                 )}
 
@@ -152,7 +154,7 @@ export default function Dashboard() {
                   {searchProducts.length === 0 && !loadingSearch && (
                     <div className="text-center py-12 text-gray-500 bg-white/5 rounded-2xl border border-white/5 border-dashed">
                       <Search size={40} className="mx-auto mb-4 opacity-15" />
-                      <p>Ingresa un producto o nicho para análisis detallado.</p>
+                      <p>Ingresa un producto para análisis detallado.</p>
                     </div>
                   )}
                 </div>
@@ -164,23 +166,23 @@ export default function Dashboard() {
       </div>
 
 
-      {/* ── Section 2: Top 20 Mejor Calificados ── */}
+      {/* ── Section 2: Top´s ── */}
       <div className="glass rounded-3xl overflow-hidden border border-white/5 transition-all">
         <button 
-          onClick={() => toggleSection('top20')} 
+          onClick={() => toggleSection('top')} 
           className="w-full flex items-center justify-between p-6 bg-black/20 hover:bg-white/5 transition-colors"
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-yellow-500/20 rounded-xl text-yellow-400">
               <TrendingUp size={24} />
             </div>
-            <h3 className="text-2xl font-bold text-white">Top 20: Mejor Calificados (Global)</h3>
+            <h3 className="text-2xl font-bold text-white">Top´s</h3>
           </div>
-          {openSection === 'top20' ? <ChevronUp size={24} className="text-gray-400" /> : <ChevronDown size={24} className="text-gray-400" />}
+          {openSection === 'top' ? <ChevronUp size={24} className="text-gray-400" /> : <ChevronDown size={24} className="text-gray-400" />}
         </button>
 
         <AnimatePresence>
-          {openSection === 'top20' && (
+          {openSection === 'top' && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -189,31 +191,45 @@ export default function Dashboard() {
             >
               <div className="p-6 border-t border-white/5 space-y-6">
                 
-                <div className="flex justify-between items-center bg-black/40 p-5 rounded-2xl border border-white/5">
-                  <p className="text-gray-400 text-sm max-w-lg">
-                     Genera un Top 20 en tiempo real centrado en productos ganadores de CUALQUIER categoría. Los agentes analizarán 20 productos incluyendo validación logística rigurosa.
-                  </p>
+                <div className="flex flex-col md:flex-row justify-between items-center bg-black/40 p-5 rounded-2xl border border-white/5 gap-4">
+                  <div className="flex flex-col">
+                    <p className="text-gray-400 text-sm max-w-sm">
+                       Genera un ranking de productos ganadores. Los agentes validarán logística y rentabilidad.
+                    </p>
+                    <div className="flex items-center gap-3 mt-3">
+                      <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Ver:</span>
+                      {[10, 20, 30].map(n => (
+                        <button 
+                          key={n}
+                          onClick={() => setTopCount(n)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${topCount === n ? 'bg-yellow-400 text-black shadow-lg shadow-yellow-400/20' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                        >
+                          Top {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <button
-                    onClick={handleTop20}
-                    disabled={loadingTop20}
-                    className="explore-btn--yellow flex items-center justify-center gap-3 px-6 py-3 rounded-full font-bold text-black disabled:opacity-50 whitespace-nowrap bg-yellow-400 hover:bg-yellow-300 transition-colors"
+                    onClick={handleTopRequest}
+                    disabled={loadingTop}
+                    className="explore-btn--yellow flex items-center justify-center gap-3 px-8 py-4 rounded-full font-bold text-black disabled:opacity-50 whitespace-nowrap bg-yellow-400 hover:bg-yellow-300 transition-colors"
                   >
-                    {loadingTop20 ? <Loader2 size={18} className="animate-spin" /> : <BarChart2 size={18} />}
-                    {loadingTop20 ? "Analizando mercado..." : "Generar Top 20"}
+                    {loadingTop ? <Loader2 size={18} className="animate-spin" /> : <BarChart2 size={18} />}
+                    {loadingTop ? "Analizando..." : `Generar Top ${topCount}`}
                   </button>
                 </div>
 
-                {loadingTop20 && (
+                {loadingTop && (
                   <div className="text-yellow-400 text-sm flex items-center justify-center animate-pulse py-4">
                     <Loader2 size={16} className="mr-2 animate-spin" />
-                    Compilando la lista maestra de 20 productos. Esto requiere procesamiento intensivo...
+                    Analizando los {topCount} mejores productos del mercado global...
                   </div>
                 )}
 
-                {/* Top 20 Results */}
-                {top20Products.length > 0 && (
+                {/* Top Results */}
+                {topProducts.length > 0 && (
                   <div className="bg-black/30 rounded-2xl border border-white/10 p-2 overflow-x-auto">
-                    <table className="w-full text-left text-sm whitespace-nowrap">
+                    <table className="w-full text-left text-sm min-w-[800px]">
                       <thead className="text-gray-500 border-b border-white/5 uppercase text-xs">
                         <tr>
                           <th className="p-4 font-semibold pb-4">#</th>
@@ -226,12 +242,12 @@ export default function Dashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {top20Products.map((p, idx) => (
+                        {topProducts.map((p, idx) => (
                           <tr key={idx} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                             <td className="p-4 font-black text-gray-500">{idx + 1}</td>
                             <td className="p-4">
-                              <div className="font-bold text-white truncate max-w-[200px]" title={p.name}>{p.name}</div>
-                              <div className="text-xs text-gray-500">{p.category} • {p.trendStatus}</div>
+                              <div className="font-bold text-white whitespace-normal leading-tight max-w-[250px]">{p.name}</div>
+                              <div className="text-xs text-gray-500 mt-1 uppercase tracking-tighter">{p.category}</div>
                             </td>
                             <td className="p-4">
                               <div className="text-gray-300">{p.supplier?.platform || '-'}</div>
@@ -265,10 +281,10 @@ export default function Dashboard() {
                   </div>
                 )}
                 
-                {top20Products.length === 0 && !loadingTop20 && (
+                {topProducts.length === 0 && !loadingTop && (
                   <div className="text-center py-12 text-gray-500 bg-white/5 rounded-2xl border border-white/5 border-dashed">
                     <TrendingUp size={40} className="mx-auto mb-4 opacity-15" />
-                    <p>Haz clic en Generar para iniciar el análisis profundo.</p>
+                    <p>Haz clic en Generar para iniciar el proceso.</p>
                   </div>
                 )}
 
@@ -291,7 +307,7 @@ function DetailedProductCard({ product }: { product: ProductReview }) {
 
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 relative z-10">
         <div>
-          <h3 className="text-xl font-bold text-white mb-2">{product.name}</h3>
+          <h3 className="text-xl font-bold text-white mb-2 whitespace-normal leading-tight">{product.name}</h3>
           <div className="flex flex-wrap gap-2 text-xs">
             <span className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-gray-400">
               {product.category}

@@ -7,13 +7,13 @@ import { PricingAgent } from './pricingAgent';
 import { ScoringAgent } from './scoringAgent';
 
 export class Top20Orchestrator {
-  async runResearchCycle(): Promise<ProductReview[]> {
-    console.log('[Top20 Agency] Iniciando generación Top 20 Moda...');
-    let context: AgentContext = { query: 'moda', candidates: [] };
+  async runResearchCycle(count: number = 20): Promise<ProductReview[]> {
+    console.log(`[Top20 Agency] Iniciando generación Top ${count} Global...`);
+    let context: AgentContext = { query: 'global', candidates: [] };
 
-    // 1. Top20 Trends (Specialized agent for 20 fashion products)
+    // 1. TopX Trends
     const trends = new Top20TrendsAgent();
-    context.candidates = await trends.run();
+    context.candidates = await trends.run(count);
     if (!context.candidates.length) return [];
 
     console.log(`[Top20 Agency] Validando logística de ${context.candidates.length} candidatos...`);
@@ -22,10 +22,6 @@ export class Top20Orchestrator {
 
     console.log(`[Top20 Agency] Analizando el resto en paralelo (Proveedores, Competencia, Pricing)...`);
 
-    // We can run these agents sequentially, but wait, the supplier/competitor/pricing agents 
-    // are written to map over context.candidates internally using Promise.all
-    // So we can just call them one after the other, and inside they run perfectly in parallel for all 20 products!
-    
     // 2. Proveedores
     const supplier = new SupplierAgent();
     context.candidates = await supplier.run(context);
@@ -38,14 +34,14 @@ export class Top20Orchestrator {
     const pricing = new PricingAgent();
     context.candidates = await pricing.run(context);
 
-    // 5. Scoring (the scoring agent uses all the context filled above)
+    // 5. Scoring
     const scoring = new ScoringAgent();
     const finalProducts = await scoring.run(context);
 
     console.log(`[Top20 Agency] Ciclo completado. Generados ${finalProducts.length} productos.`);
     
-    // Sort by score descending and return exactly top 20
-    const sorted = finalProducts.sort((a, b) => b.finalScore - a.finalScore).slice(0, 20);
+    // Sort by score descending and return exactly Top X
+    const sorted = finalProducts.sort((a, b) => (b.finalScore ?? 0) - (a.finalScore ?? 0)).slice(0, count);
     return sorted;
   }
 }
