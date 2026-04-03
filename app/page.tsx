@@ -174,7 +174,7 @@ export default function Dashboard() {
             <div className="p-3 bg-yellow-500/20 rounded-xl text-yellow-400">
               <TrendingUp size={24} />
             </div>
-            <h3 className="text-2xl font-bold text-white">Top 20 Moda: Mejor Calificados</h3>
+            <h3 className="text-2xl font-bold text-white">Top 20: Mejor Calificados (Global)</h3>
           </div>
           {openSection === 'top20' ? <ChevronUp size={24} className="text-gray-400" /> : <ChevronDown size={24} className="text-gray-400" />}
         </button>
@@ -191,7 +191,7 @@ export default function Dashboard() {
                 
                 <div className="flex justify-between items-center bg-black/40 p-5 rounded-2xl border border-white/5">
                   <p className="text-gray-400 text-sm max-w-lg">
-                     Genera un Top 20 en tiempo real centrado en dropshipping de moda. Los agentes analizarán 20 productos de forma masiva (sin validación de logística frágil, asumiendo ropa).
+                     Genera un Top 20 en tiempo real centrado en productos ganadores de CUALQUIER categoría. Los agentes analizarán 20 productos incluyendo validación logística rigurosa.
                   </p>
                   <button
                     onClick={handleTop20}

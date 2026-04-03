@@ -3,15 +3,15 @@ import { ProductReview, AgentContext } from './types';
 
 export class Top20TrendsAgent {
   async run(): Promise<Partial<ProductReview>[]> {
-    console.log(`[Agent: Top20 Trends] Generando lista maestra de 20 productos de moda...`);
+    console.log(`[Agent: Top20 Trends] Generando lista maestra de 20 productos ganadores...`);
 
     const prompt = `
-    Eres un analista de dropshipping especializado exclusivamente en FAST FASHION y moda.
-    Tu objetivo es encontrar los 20 mejores productos virales o con gran crecimiento sostenido para vender ahora.
+    Eres un analista de dropshipping experto en detectar productos virales y de alta rentabilidad en CUALQUIER categoría (Hogar, Salud, Gadgets, Belleza, Mascotas, etc.).
+    Tu objetivo es encontrar los 20 mejores productos ganadores (winning products) que están explotando en TikTok e Instagram ahora mismo.
     Devuelve EXACTAMENTE 20 productos empaquetados en un array JSON.
     Formato estricto:
     [
-      { "name": "Nombre de producto (ej: Sudadera oversized vintage)", "category": "streetwear", "trendStatus": "creciente" },
+      { "name": "Nombre de producto (ej: Proyector de estrellas galaxia)", "category": "gadgets", "trendStatus": "creciente" },
       ... 19 más ...
     ]
     Solo responde con el array en JSON crudo, sin markdown tags.

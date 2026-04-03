@@ -1,5 +1,6 @@
 import { ProductReview, AgentContext } from './types';
 import { Top20TrendsAgent } from './top20TrendsAgent';
+import { ValidationAgent } from './validationAgent';
 import { SupplierAgent } from './supplierAgent';
 import { CompetitorAgent } from './competitorAgent';
 import { PricingAgent } from './pricingAgent';
@@ -15,7 +16,11 @@ export class Top20Orchestrator {
     context.candidates = await trends.run();
     if (!context.candidates.length) return [];
 
-    console.log(`[Top20 Agency] Analizando ${context.candidates.length} productos en paralelo (Proveedores, Competencia, Pricing)...`);
+    console.log(`[Top20 Agency] Validando logística de ${context.candidates.length} candidatos...`);
+    const validation = new ValidationAgent();
+    context.candidates = await validation.run(context);
+
+    console.log(`[Top20 Agency] Analizando el resto en paralelo (Proveedores, Competencia, Pricing)...`);
 
     // We can run these agents sequentially, but wait, the supplier/competitor/pricing agents 
     // are written to map over context.candidates internally using Promise.all
