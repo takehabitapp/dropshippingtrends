@@ -1,65 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { Product, Analysis, Creative } from "@/lib/supabase";
+import { useState } from "react";
+import { ProductReview } from "@/lib/agency/types";
 import {
   Search,
   Sparkles,
-  Image as ImageIcon,
-  CheckCircle,
-
   TrendingUp,
   BarChart2,
-  Bookmark,
-  X,
-  ChevronDown,
-  ChevronUp,
+  AlertTriangle,
+  Package,
+  Activity,
+  CheckCircle,
   Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [query, setQuery] = useState("");
+  const [products, setProducts] = useState<ProductReview[]>([]);
   const [loading, setLoading] = useState(false);
-  const [analyzingMap, setAnalyzingMap] = useState<Record<string, boolean>>({});
-  const [savingMap, setSavingMap] = useState<Record<string, boolean>>({});
-  const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
-
-  const [activeProduct, setActiveProduct] = useState<Product | null>(null);
-  const [activeAnalysis, setActiveAnalysis] = useState<Analysis | null>(null);
-  const [activeCreatives, setActiveCreatives] = useState<Creative[]>([]);
-  const [modalOpen, setModalOpen] = useState(false);
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("score", { ascending: false });
-
-    if (data && !error) {
-      setProducts(data);
-    }
-  };
 
   const handleExplore = async () => {
+    if (!query.trim()) return;
     setLoading(true);
+    setProducts([]);
+    
     try {
-      const res = await fetch("/api/explore", { method: "POST" });
+      const res = await fetch("/api/explore", { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      });
+      
       const data = await res.json();
-      if (data.success) {
-        const sorted = data.products.sort(
-          (a: Product, b: Product) => b.score - a.score
-        );
-        setProducts(sorted);
-        const topProducts = sorted.filter(
-          (p: Product) => p.status === "top"
-        );
-        topProducts.forEach((p: Product) => autoAnalyze(p.id));
+      if (data.success && data.products) {
+        setProducts(data.products);
       }
     } catch (e) {
       console.error(e);
@@ -68,261 +43,196 @@ export default function Dashboard() {
     }
   };
 
-  const autoAnalyze = async (productId: string) => {
-    setAnalyzingMap((prev) => ({ ...prev, [productId]: true }));
-    try {
-      await fetch("/api/analyze", {
-        method: "POST",
-        body: JSON.stringify({ productId }),
-        headers: { "Content-Type": "application/json" },
-      });
-      fetchProducts();
-    } finally {
-      setAnalyzingMap((prev) => ({ ...prev, [productId]: false }));
-    }
-  };
-
-  const handleSaveProduct = async (product: Product) => {
-    setSavingMap((prev) => ({ ...prev, [product.id]: true }));
-    try {
-      await fetch("/api/save", {
-        method: "POST",
-        body: JSON.stringify({ productId: product.id }),
-        headers: { "Content-Type": "application/json" },
-      });
-      fetchProducts();
-    } finally {
-      setSavingMap((prev) => ({ ...prev, [product.id]: false }));
-    }
-  };
-
-  const openDetails = async (product: Product) => {
-    setActiveProduct(product);
-    setActiveAnalysis(null);
-    setActiveCreatives([]);
-    setModalOpen(true);
-
-    const { data: analysis } = await supabase
-      .from("analysis")
-      .select("*")
-      .eq("product_id", product.id)
-      .single();
-    const { data: creatives } = await supabase
-      .from("creatives")
-      .select("*")
-      .eq("product_id", product.id);
-
-    setActiveAnalysis(analysis || null);
-    setActiveCreatives(creatives || []);
-  };
-
-  const toggleExpand = (id: string) => {
-    setExpandedMap((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  // --- Derived stats ---
-  const totalProducts = products.length;
-  const topCount = products.filter((p) => p.status === "top").length;
-  const analyzedCount = products.filter(
-    (p) => p.status === "analyzed" || p.status === "saved"
-  ).length;
-  const savedCount = products.filter((p) => p.status === "saved").length;
-  const analyzingCount = Object.values(analyzingMap).filter(Boolean).length;
-
-  const savedProducts = products.filter((p) => p.status === "saved");
-  const otherProducts = products.filter((p) => p.status !== "saved");
-
   return (
     <div className="space-y-10">
       {/* ── Hero / Action Header ── */}
-      <div className="hero-card flex flex-col md:flex-row justify-between items-center gap-6 p-8 rounded-3xl">
+      <div className="hero-card flex flex-col justify-center items-center gap-6 p-10 rounded-3xl text-center">
         <div>
-          <h2 className="text-3xl font-bold gradient-text mb-2">
-            Descubrimiento de Productos
+          <h2 className="text-4xl font-bold gradient-text mb-4">
+            Dropshipping Deep Analysis
           </h2>
-          <p className="text-gray-400 text-lg">
-            Encuentra y analiza los mejores productos para dropshipping con IA.
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            Sistema Multi-Agente Avanzado. Encuentra oportunidades reales de mercado basadas en validación profunda.
           </p>
         </div>
-        <button
-          onClick={handleExplore}
-          disabled={loading}
-          className="explore-btn flex items-center gap-3 px-8 py-4 rounded-full font-semibold text-black disabled:opacity-50 whitespace-nowrap"
-        >
-          {loading ? (
-            <Loader2 size={20} className="animate-spin" />
-          ) : (
-            <Search size={20} />
-          )}
-          {loading ? "Explorando la red…" : "Buscar Productos"}
-        </button>
-      </div>
-
-      {/* ── Metrics Row ── */}
-      {totalProducts > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <MetricCard
-            icon={<BarChart2 size={18} />}
-            label="Total"
-            value={totalProducts}
-            color="text-white"
+        
+        <div className="flex flex-col md:flex-row w-full max-w-xl gap-4 mt-4">
+          <input 
+            type="text" 
+            placeholder="Ej: streetwear, gym wear mujer..." 
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            disabled={loading}
+            className="flex-1 bg-black/40 border border-white/10 rounded-full px-6 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+            onKeyDown={(e) => e.key === "Enter" && handleExplore()}
           />
-          <MetricCard
-            icon={<TrendingUp size={18} />}
-            label="Top 10"
-            value={topCount + analyzedCount}
-            color="text-yellow-400"
-          />
-          <MetricCard
-            icon={
-              analyzingCount > 0 ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <Sparkles size={18} />
-              )
-            }
-            label={analyzingCount > 0 ? `Analizando (${analyzingCount})` : "Analizados"}
-            value={analyzedCount}
-            color="text-blue-400"
-          />
-          <MetricCard
-            icon={<Bookmark size={18} />}
-            label="Guardados"
-            value={savedCount}
-            color="text-green-400"
-          />
+          <button
+            onClick={handleExplore}
+            disabled={loading || !query.trim()}
+            className="explore-btn flex items-center justify-center gap-3 px-8 py-4 rounded-full font-semibold text-black disabled:opacity-50 whitespace-nowrap"
+          >
+            {loading ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <Search size={20} />
+            )}
+            {loading ? "Analizando mercado..." : "Buscar productos"}
+          </button>
         </div>
-      )}
+        
+        {loading && (
+          <div className="text-purple-400 text-sm flex items-center justify-center mt-2 animate-pulse">
+            <Sparkles size={16} className="mr-2" />
+            Ejecutando agencia de analistas. Este proceso toma su tiempo para garantizar la calidad...
+          </div>
+        )}
+      </div>
 
       {/* ── Empty state ── */}
       {products.length === 0 && !loading && (
         <div className="text-center py-24 text-gray-500">
           <Search size={52} className="mx-auto mb-4 opacity-15" />
-          <p className="text-xl font-semibold">No hay productos todavía.</p>
+          <p className="text-xl font-semibold">Esperando término de búsqueda.</p>
           <p className="text-sm mt-2">
-            Haz clic en &quot;Buscar Productos&quot; para comenzar.
+            Ingresa un nicho para que los agentes hagan el análisis.
           </p>
         </div>
       )}
 
-      {/* ── Saved Products Gallery ── */}
-      {savedProducts.length > 0 && (
-        <section>
-          <h3 className="section-title mb-4">
-            <Bookmark size={18} className="text-green-400" />
-            Productos Guardados
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence>
-              {savedProducts.map((product) => (
-                <SavedCard
-                  key={product.id}
-                  product={product}
-                  onOpen={openDetails}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        </section>
-      )}
-
       {/* ── Main Product List ── */}
-      {otherProducts.length > 0 && (
+      {products.length > 0 && (
         <section>
-          {savedProducts.length > 0 && (
-            <h3 className="section-title mb-4">
-              <TrendingUp size={18} className="text-purple-400" />
-              Exploración Actual
-            </h3>
-          )}
-          <div className="grid grid-cols-1 gap-3">
+          <h3 className="section-title mb-6 text-xl">
+            <TrendingUp size={24} className="text-purple-400 mr-2" />
+            Resultados del Análisis
+          </h3>
+          <div className="grid grid-cols-1 gap-6">
             <AnimatePresence>
-              {otherProducts.map((product) => (
+              {products.map((product, idx) => (
                 <motion.div
-                  key={product.id}
+                  key={idx}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.97 }}
-                  className="glass product-row rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 hover:bg-white/[0.07] transition-colors"
+                  className="glass rounded-3xl p-6 lg:p-8 flex flex-col gap-6 relative overflow-hidden"
                 >
-                  {/* Left info */}
-                  <div className="flex-1 w-full">
-                    <div className="flex items-center gap-3 mb-1 flex-wrap">
-                      <h3 className="text-base font-bold text-white">
+                  {/* Decorative Gradient Background based on decision */}
+                  <div className={`absolute -right-40 -top-40 w-96 h-96 rounded-full blur-3xl opacity-10 pointer-events-none ${product.finalDecision === 'ESCALAR' ? 'bg-green-500' : product.finalDecision === 'TESTEAR' ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+
+                  {/* Header Row */}
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-2">
                         {product.name}
                       </h3>
-                      <StatusBadge
-                        status={product.status}
-                        analyzing={analyzingMap[product.id]}
-                      />
+                      <div className="flex flex-wrap gap-2 text-sm">
+                        <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-gray-300">
+                          {product.category}
+                        </span>
+                        <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-gray-300 flex items-center gap-1">
+                          <Activity size={14} className="text-purple-400" />
+                          Tendencia: <strong className="text-white">{product.trendStatus}</strong>
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                      <span className="tag">{product.keyword}</span>
-                      <span>
-                        Tendencia:{" "}
-                        <strong className="text-gray-300">{product.trend}</strong>
-                      </span>
-                      <span>
-                        Crecimiento:{" "}
-                        <strong className="text-gray-300">{product.growth}</strong>
-                      </span>
-                      <span>
-                        Saturación:{" "}
-                        <strong className="text-gray-300">
-                          {product.saturation}
-                        </strong>
-                      </span>
+                    
+                    {/* Score & Badge */}
+                    <div className="flex items-center gap-4">
+                       <DecissionBadge decision={product.finalDecision} />
+                       <div className="flex flex-col items-center justify-center bg-black/40 w-20 h-20 rounded-2xl border border-white/10 shrink-0">
+                         <span className="text-xs text-gray-500 mb-0.5">Score</span>
+                         <span className={`text-2xl font-black ${product.finalScore >= 0.7 ? "text-green-400" : product.finalScore >= 0.5 ? "text-yellow-400" : "text-red-400"}`}>
+                           {product.finalScore.toFixed(2)}
+                         </span>
+                       </div>
                     </div>
                   </div>
 
-                  {/* Score + Actions */}
-                  <div className="flex items-center gap-4 w-full md:w-auto">
-                    <ScoreBadge score={product.score} />
-                    <div className="flex flex-col gap-2 min-w-[150px]">
-                      {["top", "analyzed", "saved"].includes(product.status) && (
-                        <button
-                          onClick={() => openDetails(product)}
-                          className="action-btn action-btn--ghost"
-                        >
-                          <Sparkles size={14} className="text-purple-400" />
-                          Ver Análisis
-                        </button>
-                      )}
-                      {product.status !== "candidate" &&
-                        product.status !== "saved" && (
-                          <button
-                            onClick={() => handleSaveProduct(product)}
-                            disabled={
-                              savingMap[product.id] ||
-                              analyzingMap[product.id]
-                            }
-                            className="action-btn action-btn--primary"
-                          >
-                            {savingMap[product.id] ? (
-                              <Loader2 size={14} className="animate-spin" />
-                            ) : (
-                              <ImageIcon size={14} />
-                            )}
-                            {savingMap[product.id]
-                              ? "Generando…"
-                              : "Guardar"}
-                          </button>
+                  <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-2" />
+
+                  {/* Data Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+                    
+                    {/* Block 1: Supplier */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <Package size={16} /> Proveedor
+                      </h4>
+                      <ul className="space-y-2 text-sm text-gray-300">
+                        <li className="flex justify-between">
+                          <span className="text-gray-500">Plataforma:</span>
+                          <span className="font-medium text-white">{product.supplier?.platform || "No datos"}</span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-gray-500">Precio Proveedor:</span>
+                          <span className="font-medium text-blue-400">${product.supplier?.price?.toFixed(2) || "0.00"}</span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-gray-500">Fiabilidad:</span>
+                          <span className="font-medium capitalize text-white">{product.supplier?.reliability || "-"}</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Block 2: Economics */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <BarChart2 size={16} /> Margen & Pricing
+                      </h4>
+                      <ul className="space-y-2 text-sm text-gray-300">
+                        <li className="flex justify-between">
+                          <span className="text-gray-500">P. Mercado:</span>
+                          <span className="font-medium text-white">${product.marketPrice?.toFixed(2) || "0.00"}</span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-gray-500">P. Recomendado:</span>
+                          <span className="font-medium text-green-400">${product.recommendedPrice?.toFixed(2) || "0.00"}</span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-gray-500">Margen Estimado:</span>
+                          <span className="font-medium text-yellow-400">{product.estimatedMargin}%</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Block 3: Market */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <TrendingUp size={16} /> Competencia
+                      </h4>
+                      <ul className="space-y-2 text-sm text-gray-300">
+                        <li className="flex justify-between">
+                          <span className="text-gray-500">Nivel Competencia:</span>
+                          <span className="font-medium capitalize text-white">{product.competitionLevel}</span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-gray-500">Dificultad Entrada:</span>
+                          <span className="font-medium capitalize text-white">{product.entryDifficulty}</span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-gray-500">Potencial Branding:</span>
+                          <span className="font-medium capitalize text-white">{product.brandingPotential}</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Block 4: Risks */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2 text-orange-400">
+                        <AlertTriangle size={16} /> Riesgos Detectados
+                      </h4>
+                      <div className="text-sm text-gray-300 bg-orange-500/10 border border-orange-500/20 p-3 rounded-xl h-[90%] overflow-y-auto">
+                        {product.risks && product.risks.length > 0 ? (
+                          <ul className="list-disc pl-4 space-y-1 text-orange-200">
+                            {product.risks.map((r, i) => <li key={i}>{r}</li>)}
+                          </ul>
+                        ) : (
+                          <span className="text-gray-500 italic">Ninguno detectado.</span>
                         )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Expandable mini-metrics */}
-                  <button
-                    onClick={() => toggleExpand(product.id)}
-                    className="hidden md:flex items-center text-gray-600 hover:text-gray-400 transition-colors p-1"
-                    aria-label="expand"
-                  >
-                    {expandedMap[product.id] ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
-                    )}
-                  </button>
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -330,243 +240,30 @@ export default function Dashboard() {
         </section>
       )}
 
-      {/* ── Detail Modal ── */}
-      <AnimatePresence>
-        {modalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setModalOpen(false);
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="glass-panel w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-8 shadow-2xl border border-white/10"
-            >
-              {/* Modal header */}
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h3 className="text-2xl font-bold flex items-center gap-2">
-                    <Sparkles className="text-purple-400" />
-                    Análisis de IA
-                  </h3>
-                  {activeProduct && (
-                    <p className="text-gray-400 text-sm mt-1">
-                      {activeProduct.name}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {activeAnalysis ? (
-                <div className="space-y-5">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="stat-card">
-                      <div className="text-xs text-gray-500 mb-1">
-                        Precio Proveedor Est.
-                      </div>
-                      <div className="text-3xl font-black text-blue-400">
-                        ${activeAnalysis.supplier_estimate}
-                      </div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="text-xs text-gray-500 mb-1">
-                        Precio Venta Rec.
-                      </div>
-                      <div className="text-3xl font-black text-green-400">
-                        ${activeAnalysis.price_estimate}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="info-block">
-                    <h4 className="font-semibold text-white mb-2 text-sm uppercase tracking-wide">
-                      Competencia
-                    </h4>
-                    <p className="text-gray-300 leading-relaxed text-sm">
-                      {activeAnalysis.competition_summary}
-                    </p>
-                  </div>
-
-                  <div className="info-block">
-                    <h4 className="font-semibold text-white mb-2 text-sm uppercase tracking-wide">
-                      Razonamiento
-                    </h4>
-                    <p className="text-gray-300 leading-relaxed text-sm">
-                      {activeAnalysis.reasoning}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                  <Loader2 className="w-10 h-10 mb-4 animate-spin opacity-40" />
-                  <p>Cargando análisis…</p>
-                </div>
-              )}
-
-              {/* Creatives */}
-              <div className="mt-8">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <ImageIcon size={18} className="text-blue-400" />
-                  Creatividades DALL·E
-                </h3>
-                {activeCreatives.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {activeCreatives.map((c) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={c.id}
-                        src={c.image_url}
-                        alt="Producto generado"
-                        className="w-full h-auto rounded-2xl border border-white/10 object-cover aspect-square"
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl p-8 text-center text-gray-600 border border-white/5 border-dashed bg-black/20 text-sm">
-                    {activeProduct?.status === "saved"
-                      ? "Las imágenes se están generando…"
-                      : "Guarda el producto para generar creatividades con DALL·E."}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
 
-// ── Sub-components ──────────────────────────────────────────────────────────
+// ── Components ──────────────────────────────────────────────────────────────
 
-function MetricCard({
-  icon,
-  label,
-  value,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  color: string;
-}) {
-  return (
-    <div className="glass rounded-2xl p-4 flex items-center gap-3">
-      <div className={`${color} opacity-80`}>{icon}</div>
-      <div>
-        <div className="text-xs text-gray-500">{label}</div>
-        <div className={`text-2xl font-black ${color}`}>{value}</div>
+function DecissionBadge({ decision }: { decision: string }) {
+  if (decision === "ESCALAR") {
+    return (
+      <div className="px-4 py-2 rounded-xl bg-green-500/20 border border-green-500/40 text-green-400 font-bold tracking-widest text-sm flex items-center gap-2">
+        <CheckCircle size={16} /> ESCALAR
       </div>
+    );
+  }
+  if (decision === "TESTEAR") {
+    return (
+      <div className="px-4 py-2 rounded-xl bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 font-bold tracking-widest text-sm flex items-center gap-2">
+        <Sparkles size={16} /> TESTEAR
+      </div>
+    );
+  }
+  return (
+    <div className="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-500 font-bold tracking-widest text-sm flex items-center gap-2">
+      <AlertTriangle size={16} /> DESCARTAR
     </div>
   );
 }
-
-function SavedCard({
-  product,
-  onOpen,
-}: {
-  product: Product;
-  onOpen: (p: Product) => void;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className="glass rounded-2xl overflow-hidden cursor-pointer group hover:border-green-500/30 transition-all border border-transparent"
-      onClick={() => onOpen(product)}
-    >
-      {/* Placeholder gradient image area */}
-      <div className="h-36 bg-gradient-to-br from-green-900/30 to-blue-900/30 flex items-center justify-center relative">
-        <ImageIcon size={32} className="text-green-400 opacity-40 group-hover:opacity-70 transition-opacity" />
-        <div className="absolute top-2 right-2">
-          <span className="text-xs px-2 py-1 rounded-md bg-green-500/20 text-green-400 border border-green-500/30">
-            Guardado
-          </span>
-        </div>
-      </div>
-      <div className="p-4">
-        <h4 className="font-bold text-white text-sm truncate mb-1">
-          {product.name}
-        </h4>
-        <div className="flex items-center justify-between">
-          <span className="tag text-xs">{product.keyword}</span>
-          <span className={`text-sm font-black ${product.score > 70 ? "text-green-400" : "text-yellow-400"}`}>
-            {product.score.toFixed(0)}
-          </span>
-        </div>
-        <p className="text-xs text-gray-500 mt-2 group-hover:text-gray-400 transition-colors">
-          Ver análisis y creatividades →
-        </p>
-      </div>
-    </motion.div>
-  );
-}
-
-function ScoreBadge({ score }: { score: number }) {
-  const color =
-    score > 70 ? "text-green-400" : score > 45 ? "text-yellow-400" : "text-red-400";
-  const bg =
-    score > 70 ? "border-green-500/20" : score > 45 ? "border-yellow-500/20" : "border-red-500/20";
-  return (
-    <div
-      className={`flex flex-col items-center justify-center bg-black/40 w-16 h-16 rounded-xl border ${bg} shrink-0`}
-    >
-      <span className="text-[10px] text-gray-500 mb-0.5">Score</span>
-      <span className={`text-xl font-black ${color}`}>{score.toFixed(0)}</span>
-    </div>
-  );
-}
-
-function StatusBadge({
-  status,
-  analyzing,
-}: {
-  status: string;
-  analyzing?: boolean;
-}) {
-  if (analyzing)
-    return (
-      <span className="text-xs px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-        <Loader2 size={10} className="animate-spin" /> Analizando…
-      </span>
-    );
-  if (status === "candidate")
-    return (
-      <span className="text-xs px-2 py-0.5 rounded-md bg-gray-500/20 text-gray-400 border border-gray-500/30">
-        Candidato
-      </span>
-    );
-  if (status === "top")
-    return (
-      <span className="text-xs px-2 py-0.5 rounded-md bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-        Top 10
-      </span>
-    );
-  if (status === "analyzed")
-    return (
-      <span className="text-xs px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1">
-        <CheckCircle size={10} /> Analizado
-      </span>
-    );
-  if (status === "saved")
-    return (
-      <span className="text-xs px-2 py-0.5 rounded-md bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1">
-        <CheckCircle size={10} /> Guardado
-      </span>
-    );
-  return null;
-}
-

@@ -6,10 +6,20 @@ function getSupabase(): SupabaseClient {
   if (!_supabase) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase environment variables');
+
+    if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('tu_url')) {
+      console.error('CRITICAL: Supabase environment variables are missing or use default placeholders in .env.local');
+      // Return a dummy client to avoid crashing the whole Proxy/App immediately
+      // but the user will see errors in the console/network
+      return createClient('https://placeholder.supabase.co', 'placeholder');
     }
-    _supabase = createClient(supabaseUrl, supabaseKey);
+
+    try {
+      _supabase = createClient(supabaseUrl, supabaseKey);
+    } catch (e) {
+      console.error('Supabase initialization failed:', e);
+      return createClient('https://placeholder.supabase.co', 'placeholder');
+    }
   }
   return _supabase;
 }

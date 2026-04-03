@@ -1,31 +1,29 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { generateMockProducts } from '@/lib/services/products';
+import { ResearchAgency } from '@/lib/agency/orchestrator';
 
-export async function POST() {
+// Aumentamos el máximo de duración para serverless functions si estamos en Vercel
+export const maxDuration = 60; // Max permitted on Hobby plan, or higher on Pro
+
+export async function POST(req: Request) {
   try {
-    // Generate 30 fake products
-    const products = generateMockProducts(30);
-    
-    // Save all to database
-    // We remove the status 'candidate'/'top' momentarily if you want to rely on DB,
-    // but we can just insert them as they are formatted correctly.
-    const { data: inserted, error } = await supabase
-      .from('products')
-      .insert(products)
-      .select('*');
+    const { query } = await req.json();
 
-    if (error) {
-      console.error('Supabase Insert Error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!query || query.trim() === '') {
+      return NextResponse.json({ error: 'Query is missing or empty' }, { status: 400 });
     }
 
-    // Return the inserted products to the client immediately
-    return NextResponse.json({ success: true, products: inserted });
+    const agency = new ResearchAgency();
+    const products = await agency.runResearchCycle(query);
+
+    return NextResponse.json({ 
+      success: true, 
+      count: products.length,
+      products 
+    });
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Error in /api/explore:', err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[API Explore] Error general:', err);
+    return NextResponse.json({ error: message, success: false }, { status: 500 });
   }
 }
