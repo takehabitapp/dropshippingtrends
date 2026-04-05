@@ -10,7 +10,7 @@ export interface SupplierInfo {
 export interface DeepAnalysis {
   purchaseRecommendation: string;
   justification: string;
-  sources: string[];
+  sources: { name: string; url: string }[];
   riskLevel: 'bajo' | 'medio' | 'alto' | 'crítico';
   profitPotential: string;
 }

@@ -26,11 +26,15 @@ export class DeepResearchAgent {
     {
       "purchaseRecommendation": "...",
       "justification": "...",
-      "sources": ["Fuente 1", "Fuente 2"],
+      "sources": [
+        { "name": "AliExpress", "url": "https://www.aliexpress.com/..." },
+        { "name": "Alibaba", "url": "https://www.alibaba.com/..." }
+      ],
       "riskLevel": "bajo | medio | alto | crítico",
       "profitPotential": "..."
     }
     
+    Asegúrate de que las URLs de las fuentes sean enlaces de búsqueda reales para el producto "${product.name}".
     Usa un tono profesional, directo y basado en datos simulados pero realistas.
     Solo responde con el objeto JSON crudo.
     `;
@@ -50,10 +54,14 @@ export class DeepResearchAgent {
             return JSON.parse(jsonMatch) as DeepAnalysis;
         } catch (e) {
             console.error('[Agent: DeepResearch] Error:', e);
+            const searchTerm = encodeURIComponent(product.name);
             return {
                 purchaseRecommendation: "Comprar 20-50 unidades para testeo inicial.",
                 justification: "El producto muestra una tendencia saludable pero requiere validación de mercado.",
-                sources: ["AliExpress", "CJdropshipping"],
+                sources: [
+                    { name: "AliExpress", url: `https://www.aliexpress.com/wholesale?SearchText=${searchTerm}` },
+                    { name: "Alibaba", url: `https://www.alibaba.com/trade/search?SearchText=${searchTerm}` }
+                ],
                 riskLevel: "medio",
                 profitPotential: "Moderado con escalabilidad vertical."
             };

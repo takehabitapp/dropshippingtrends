@@ -455,7 +455,11 @@ function DetailedProductCard({ product: initialProduct }: { product: ProductRevi
                 <div className="flex items-center gap-2 ml-auto">
                   <span className="text-[10px] text-gray-500 font-bold">FUENTES:</span>
                   <div className="flex gap-2">
-                    {product.deepAnalysis.sources.map((s, i) => <span key={i} className="text-[10px] bg-black/40 px-2 py-0.5 rounded border border-white/10 text-gray-400">{s}</span>)}
+                    {product.deepAnalysis.sources.map((s, i) => (
+                      <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="text-[10px] bg-black/40 px-2 py-0.5 rounded border border-white/10 text-purple-400 hover:text-purple-300 transition-colors">
+                        {s.name}
+                      </a>
+                    ))}
                   </div>
                 </div>
               </div>
