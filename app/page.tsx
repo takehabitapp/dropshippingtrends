@@ -32,14 +32,14 @@ export default function Dashboard() {
     if (!query.trim()) return;
     setLoadingSearch(true);
     setSearchProducts([]);
-    
+
     try {
-      const res = await fetch("/api/explore", { 
+      const res = await fetch("/api/explore", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query })
       });
-      
+
       const data = await res.json();
       if (data.success && data.products) {
         setSearchProducts(data.products);
@@ -54,14 +54,14 @@ export default function Dashboard() {
   const handleTopRequest = async () => {
     setLoadingTop(true);
     setTopProducts([]);
-    
+
     try {
-      const res = await fetch("/api/top20", { 
+      const res = await fetch("/api/top20", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ count: topCount })
       });
-      
+
       const data = await res.json();
       if (data.success && data.products) {
         setTopProducts(data.products);
@@ -91,8 +91,8 @@ export default function Dashboard() {
 
       {/* ── Section 1: Analizar producto ── */}
       <div className="glass rounded-3xl overflow-hidden border border-white/5 transition-all">
-        <button 
-          onClick={() => toggleSection('search')} 
+        <button
+          onClick={() => toggleSection('search')}
           className="w-full flex items-center justify-between p-6 bg-black/20 hover:bg-white/5 transition-colors"
         >
           <div className="flex items-center gap-4">
@@ -113,12 +113,12 @@ export default function Dashboard() {
               className="overflow-hidden"
             >
               <div className="p-6 border-t border-white/5 space-y-8">
-                
+
                 {/* Search Bar */}
                 <div className="flex flex-col md:flex-row w-full gap-4 bg-black/40 p-6 rounded-2xl border border-white/5">
-                  <input 
-                    type="text" 
-                    placeholder="Ej: proyector galaxia, masajeador cuello..." 
+                  <input
+                    type="text"
+                    placeholder="Ej: proyector galaxia, masajeador cuello..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     disabled={loadingSearch}
@@ -138,7 +138,7 @@ export default function Dashboard() {
                     {loadingSearch ? "Analizando..." : "Analizar producto"}
                   </button>
                 </div>
-                
+
                 {loadingSearch && (
                   <div className="text-purple-400 text-sm flex items-center justify-center animate-pulse py-4">
                     <Loader2 size={16} className="mr-2 animate-spin" />
@@ -168,8 +168,8 @@ export default function Dashboard() {
 
       {/* ── Section 2: Top´s ── */}
       <div className="glass rounded-3xl overflow-hidden border border-white/5 transition-all">
-        <button 
-          onClick={() => toggleSection('top')} 
+        <button
+          onClick={() => toggleSection('top')}
           className="w-full flex items-center justify-between p-6 bg-black/20 hover:bg-white/5 transition-colors"
         >
           <div className="flex items-center gap-4">
@@ -190,16 +190,16 @@ export default function Dashboard() {
               className="overflow-hidden"
             >
               <div className="p-6 border-t border-white/5 space-y-6">
-                
+
                 <div className="flex flex-col md:flex-row justify-between items-center bg-black/40 p-5 rounded-2xl border border-white/5 gap-4">
                   <div className="flex flex-col">
                     <p className="text-gray-400 text-sm max-w-sm">
-                       Genera un ranking de productos ganadores. Los agentes validarán logística y rentabilidad.
+                      Genera un ranking de productos ganadores. Los agentes validarán logística y rentabilidad.
                     </p>
                     <div className="flex items-center gap-3 mt-3">
                       <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Ver:</span>
                       {[10, 20, 30].map(n => (
-                        <button 
+                        <button
                           key={n}
                           onClick={() => setTopCount(n)}
                           className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${topCount === n ? 'bg-yellow-400 text-black shadow-lg shadow-yellow-400/20' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
@@ -261,10 +261,10 @@ export default function Dashboard() {
                               )}
                             </td>
                             <td className="p-4 text-blue-400 font-medium">
-                               ${p.supplier?.price?.toFixed(2) || '0.00'}
+                              ${p.supplier?.price?.toFixed(2) || '0.00'}
                             </td>
                             <td className="p-4 text-green-400 font-medium">
-                               {p.estimatedMargin}%
+                              {p.estimatedMargin}%
                             </td>
                             <td className="p-4">
                               <span className={`px-2 py-1 rounded-md bg-black border ${p.finalScore >= 0.7 ? 'border-green-500 text-green-400' : p.finalScore >= 0.5 ? 'border-yellow-500 text-yellow-400' : 'border-red-500 text-red-500'} font-bold`}>
@@ -280,7 +280,7 @@ export default function Dashboard() {
                     </table>
                   </div>
                 )}
-                
+
                 {topProducts.length === 0 && !loadingTop && (
                   <div className="text-center py-12 text-gray-500 bg-white/5 rounded-2xl border border-white/5 border-dashed">
                     <TrendingUp size={40} className="mx-auto mb-4 opacity-15" />
@@ -300,9 +300,33 @@ export default function Dashboard() {
 
 // ── Components ──────────────────────────────────────────────────────────────
 
-function DetailedProductCard({ product }: { product: ProductReview }) {
+function DetailedProductCard({ product: initialProduct }: { product: ProductReview }) {
+  const [product, setProduct] = useState(initialProduct);
+  const [loadingDeep, setLoadingDeep] = useState(false);
+  const [showDeepResults, setShowDeepResults] = useState(false);
+
+  const handleDeepResearch = async () => {
+    setLoadingDeep(true);
+    try {
+      const res = await fetch("/api/deep-research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProduct({ ...product, deepAnalysis: data.deepAnalysis });
+        setShowDeepResults(true);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingDeep(false);
+    }
+  };
+
   return (
-    <div className="bg-black/40 rounded-2xl p-6 flex flex-col gap-5 border border-white/10 relative overflow-hidden group hover:border-purple-500/30 transition-colors">
+    <div className="bg-black/40 rounded-2xl p-6 flex flex-col gap-5 border border-white/10 relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500">
       <div className={`absolute -right-20 -top-20 w-48 h-48 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors ${product.finalDecision === 'ESCALAR' ? 'bg-green-500' : product.finalDecision === 'TESTEAR' ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
 
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 relative z-10">
@@ -322,53 +346,129 @@ function DetailedProductCard({ product }: { product: ProductReview }) {
             </span>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
-            <DecissionBadge decision={product.finalDecision} />
-            <div className="flex flex-col items-center justify-center bg-black/60 w-16 h-16 rounded-xl border border-white/10 shrink-0">
-              <span className="text-[10px] text-gray-500 mb-0.5">Score</span>
-              <span className={`text-lg font-black ${product.finalScore >= 0.7 ? "text-green-400" : product.finalScore >= 0.5 ? "text-yellow-400" : "text-red-400"}`}>
-                {product.finalScore?.toFixed(2)}
-              </span>
-            </div>
+          <DecissionBadge decision={product.finalDecision} />
+          <div className="flex flex-col items-center justify-center bg-black/60 w-16 h-16 rounded-xl border border-white/10 shrink-0">
+            <span className="text-[10px] text-gray-500 mb-0.5">Score</span>
+            <span className={`text-lg font-black ${product.finalScore >= 0.7 ? "text-green-400" : product.finalScore >= 0.5 ? "text-yellow-400" : "text-red-400"}`}>
+              {product.finalScore?.toFixed(2)}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10 mt-2 p-4 bg-white/5 rounded-xl border border-white/5">
-        
-        <div className="space-y-1 text-sm">
-          <div className="font-semibold text-gray-400 flex items-center gap-1.5 mb-2"><Package size={14}/> Proveedor</div>
-          <div className="flex justify-between"><span className="text-gray-500">Plat:</span> <span className="text-gray-300">{product.supplier?.platform || '-'}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Precio:</span> <span className="text-blue-400">${product.supplier?.price?.toFixed(2) || '0.00'}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Fiab:</span> <span className="text-gray-300 capitalize">{product.supplier?.reliability || '-'}</span></div>
-          {product.supplier?.url && (
-            <div className="flex justify-end mt-2">
-              <a href={product.supplier.url} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 text-xs underline">
-                Ir al enlace de venta
-              </a>
-            </div>
-          )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 mt-2 p-5 bg-white/5 rounded-xl border border-white/5">
+
+        <div className="col-span-1 md:col-span-2 space-y-3">
+          <div className="font-semibold text-gray-400 flex items-center gap-1.5 mb-2"><Package size={14} /> Comparativa de Proveedores</div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead className="text-gray-500 border-b border-white/10 italic">
+                <tr>
+                  <th className="pb-2">Plataforma</th>
+                  <th className="pb-2">Precio</th>
+                  <th className="pb-2">Envío</th>
+                  <th className="pb-2">Fiab.</th>
+                  <th className="pb-2 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {(product.suppliers || [product.supplier]).map((s, i) => (
+                  <tr key={i} className="hover:bg-white/5 transition-colors group/row">
+                    <td className="py-2 text-gray-300 font-bold">{s.platform}</td>
+                    <td className="py-2 text-blue-400 font-medium">${s.price?.toFixed(2)}</td>
+                    <td className="py-2 text-gray-500">{s.shippingTime || '10-15d'}</td>
+                    <td className="py-2">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${s.reliability === 'alta' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : s.reliability === 'media' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                        {s.reliability}
+                      </span>
+                    </td>
+                    <td className="py-2 text-right">
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline opacity-60 group-hover/row:opacity-100 transition-opacity">Ver</a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div className="space-y-1 text-sm">
-          <div className="font-semibold text-gray-400 flex items-center gap-1.5 mb-2"><TrendingUp size={14}/> Econ & Mercado</div>
-          <div className="flex justify-between"><span className="text-gray-500">P. Venta Rec:</span> <span className="text-green-400">${product.recommendedPrice?.toFixed(2) || '0.00'}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Competencia:</span> <span className="text-gray-300 capitalize">{product.competitionLevel}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Dif. Entrada:</span> <span className="text-gray-300 capitalize">{product.entryDifficulty}</span></div>
-        </div>
+        <div className="space-y-4 text-sm border-l border-white/10 pl-4">
+          <div className="space-y-1">
+            <div className="font-semibold text-gray-400 flex items-center gap-1.5 mb-2"><TrendingUp size={14} /> Econ & Mercado</div>
+            <div className="flex justify-between"><span className="text-gray-500">P. Venta Rec:</span> <span className="text-green-400 font-bold">${product.recommendedPrice?.toFixed(2) || '0.00'}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Marketing CAC:</span> <span className="text-gray-300">$10-$15 est.</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">Dificultad:</span> <span className="text-gray-300 capitalize">{product.entryDifficulty}</span></div>
+          </div>
 
-        <div className="space-y-1 text-sm border-l-0 md:border-l pl-0 md:pl-4 border-white/10">
-           <div className="font-semibold text-orange-400 flex items-center gap-1.5 mb-2"><AlertTriangle size={14}/> Riesgos / Notas</div>
-           {product.risks && product.risks.length > 0 ? (
-              <ul className="list-disc pl-4 text-orange-200 text-xs space-y-1">
-                {product.risks.map((r, i) => <li key={i}>{r}</li>)}
-              </ul>
-            ) : (
-              <span className="text-gray-500 text-xs italic">Sin riesgos mayores.</span>
-            )}
+          <button
+            onClick={handleDeepResearch}
+            disabled={loadingDeep}
+            className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${product.deepAnalysis ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-900/20'}`}
+          >
+            {loadingDeep ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+            {product.deepAnalysis ? "Análisis Completado" : "Investigación Profunda"}
+          </button>
         </div>
-
       </div>
+
+      <AnimatePresence>
+        {showDeepResults && product.deepAnalysis && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            className="overflow-hidden mt-2"
+          >
+            <div className="p-5 bg-gradient-to-br from-purple-900/40 to-black/40 rounded-xl border border-purple-500/30 space-y-4 relative">
+              <div className="flex justify-between items-start">
+                <h4 className="text-purple-300 font-black uppercase tracking-tighter text-sm flex items-center gap-2">
+                  <Sparkles size={14} /> Resultados de Investigación Experta
+                </h4>
+                <button onClick={() => setShowDeepResults(false)} className="text-gray-500 hover:text-white">
+                  <ChevronUp size={16} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs lg:text-sm">
+                <div className="space-y-2">
+                  <div className="text-gray-400 font-bold uppercase text-[10px]">Estrategia de Compra:</div>
+                  <p className="text-white bg-white/5 p-3 rounded-lg border border-white/10">{product.deepAnalysis.purchaseRecommendation}</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-gray-400 font-bold uppercase text-[10px]">Justificación Experta:</div>
+                  <p className="text-white bg-white/5 p-3 rounded-lg border border-white/10">{product.deepAnalysis.justification}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-6 mt-2 pt-4 border-t border-white/5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-500 font-bold">RIESGO:</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${product.deepAnalysis.riskLevel === 'bajo' ? 'bg-green-500 text-black' : product.deepAnalysis.riskLevel === 'medio' ? 'bg-yellow-500 text-black' : 'bg-red-500 text-white'}`}>
+                    {product.deepAnalysis.riskLevel}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-500 font-bold">POTENCIAL:</span>
+                  <span className="text-green-400 font-bold uppercase text-xs">{product.deepAnalysis.profitPotential}</span>
+                </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <span className="text-[10px] text-gray-500 font-bold">FUENTES:</span>
+                  <div className="flex gap-2">
+                    {product.deepAnalysis.sources.map((s, i) => <span key={i} className="text-[10px] bg-black/40 px-2 py-0.5 rounded border border-white/10 text-gray-400">{s}</span>)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="mt-2 text-[10px] text-gray-600 italic flex items-center gap-1">
+        <Loader2 size={10} className="opacity-50" />
+        Datos analizados por red neuronal de alto rendimiento. Resultados simulados para asistencia experta.
+      </div>
+
     </div>
   );
 }
@@ -376,7 +476,7 @@ function DetailedProductCard({ product }: { product: ProductReview }) {
 function DecissionBadge({ decision, small = false }: { decision: string, small?: boolean }) {
   const p = small ? "px-2 py-1 text-xs" : "px-4 py-2 text-sm";
   const iconSize = small ? 12 : 16;
-  
+
   if (decision === "ESCALAR") {
     return (
       <div className={`${p} rounded-xl bg-green-500/20 border border-green-500/40 text-green-400 font-bold tracking-widest flex items-center gap-2`}>

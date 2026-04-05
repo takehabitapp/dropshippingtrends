@@ -38,7 +38,7 @@ export class ResearchAgency {
     const finalProducts = await scoring.run(context);
 
     console.log(`[Agency] Ciclo completado. ${finalProducts.length} leads retornados.`);
-    
+
     // Sort by score descending
     const sorted = finalProducts.sort((a, b) => b.finalScore - a.finalScore);
     return sorted;
